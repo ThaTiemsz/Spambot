@@ -1,0 +1,17 @@
+{
+	"name": "Spambot",
+	"version": "0.1",
+	"description": "Discord.js Bot that will handle spam",
+	"readme": "README.md",
+	"maintainers": [],
+	"author": "",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ThaTiemsz/Spambot.git"
+	},
+	"dependencies": {
+		"discord.js": "11.0.x",
+		"npm": ""
+	},
+	"main": "spam.js"
+}
