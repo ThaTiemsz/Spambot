@@ -10,8 +10,7 @@
 		"url": "git+https://github.com/ThaTiemsz/Spambot.git"
 	},
 	"dependencies": {
-		"discord.js": "11.0.x",
-		"npm": ""
+		"discord.js": "11.0.x"
 	},
 	"main": "spam.js"
 }
