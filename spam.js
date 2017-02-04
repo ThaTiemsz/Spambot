@@ -9,8 +9,8 @@ client.on("ready", () => {
 
 const slowmode = new Map();
 const ratelimit = 7500; // within 7.5s
-const guild = "209719953706844161";
-const logChannel = "274871132497379328";
+const guild = "209719953706844161"; // guild id
+const logChannel = "274871132497379328"; // logs channel id
 
 client.on("message", msg => {
 
