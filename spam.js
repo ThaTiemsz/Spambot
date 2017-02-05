@@ -45,42 +45,56 @@ client.on("message", message => {
 
 	// If there is no trace of the author in the slowmode map, add them.
 	let entry_mentions = slowmode_mentions.get(message.author.id);
+	let entry_links = slowmode_links.get(message.author.id);
+	let entry_attachments = slowmode_attachments.get(message.author.id);
+
 	if (!entry_mentions) {
-		entry = 0;
+		entry_mentions = 0;
 		slowmode_mentions.set(message.author.id, entry_mentions);
 	}
-
-	let entry_links = slowmode_links.get(message.author.id);
 	if (!entry_links) {
-		entry = 0;
+		entry_links = 0;
 		slowmode_links.set(message.author.id, entry_links);
 	}
-
-	let entry_attachments = slowmode_attachments.get(message.author.id);
 	if (!entry_attachments) {
-		entry = 0;
+		entry_attachments = 0;
 		slowmode_attachments.set(message.author.id, entry_attachments);
 	}
 
-	// Count BOTH unique user and role mentions
+	// Count the unique user and roles mentions, links and attachments
 	entry_mentions += message.mentions.users.size + message.mentions.roles.size;
 	entry_links += message.embeds.size;
 	entry_attachments += message.attachments.size;
 
 	// If the total number of mentions in the last `ratelimit` is above the server ban level... well, ban their ass.
-	if (entry_mentions > banLevel.mentions) {
+	if ((entry_links > banLevel.links) || (entry_mentions > banLevel.mentions) || (entry_attachments > banLevel.attachments)) {
 		message.member.ban(1).then(member => {
-			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`mention spam\``);
-
-			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Mentioning too many users (${entry}x)`));
+			if (entry_links > banLevel.links) {
+				message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`link spam\``);
+				log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many links (${entry_links}x)`));
+			}else if (entry_mentions > banLevel.mentions) {
+				message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`mention spam\``);
+				log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Mentioning too many users (${entry_mentions}x)`));
+			}else if (entry_attachments > banLevel.attachments) {
+				message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`image spam\``);
+				log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many images (${entry_attachments}x)`));
+			}
 		})
 		.catch(e => {
 			log(new Discord.RichEmbed().setTitle(':x: ERROR').setColor(0x000001).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Could not ban because they have a higher role`));
 		});
 	} else {
 		setTimeout(()=> {
-			entry -= message.mentions.users.size + message.mentions.roles.size;
-			if(entry <= 0) slowmode.delete(message.author.id);
+			entry_mentions -= message.mentions.users.size + message.mentions.roles.size;
+			if(entry_mentions <= 0) slowmode_mentions.delete(message.author.id);
+		}, ratelimit);
+		setTimeout(()=> {
+			entry_links -= message.embeds.size;
+			if(entry_links <= 0) slowmode_links.delete(message.author.id);
+		}, ratelimit);
+		setTimeout(()=> {
+			entry_attachments -= message.attachments.size;
+			if(entry_attachments <= 0) slowmode_attachments.delete(message.author.id);
 		}, ratelimit);
 	}
 
