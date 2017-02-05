@@ -10,7 +10,7 @@ client.on("ready", () => {
 const slowmode_mentions = new Map();
 const slowmode_links = new Map();
 const slowmode_attachments = new Map();
-const ratelimit = 7500; // within 7.5s
+const ratelimit = 7500; // within 7.5 seconds
 const guild = "209719953706844161"; // guild id
 const logChannel = "274871132497379328"; // logs channel id
 
@@ -63,22 +63,35 @@ client.on("message", message => {
 
 	// Count the unique user and roles mentions, links and attachments
 	entry_mentions += message.mentions.users.size + message.mentions.roles.size;
-	entry_links += message.embeds.size;
+	entry_links += message.embeds.length;
 	entry_attachments += message.attachments.size;
+	// Set all the amounts in the slowmode maps
+	slowmode_mentions.set(message.author.id, entry_mentions);
+	slowmode_links.set(message.author.id, entry_links);
+	slowmode_attachments.set(message.author.id, entry_attachments);
 
-	// If the total number of mentions in the last `ratelimit` is above the server ban level... well, ban their ass.
-	if ((entry_links > banLevel.links) || (entry_mentions > banLevel.mentions) || (entry_attachments > banLevel.attachments)) {
+	// If the total number of links in the last ratelimit is above the server ban level, ban user
+	if (entry_links > banLevel.links) {
 		message.member.ban(1).then(member => {
-			if (entry_links > banLevel.links) {
-				message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`link spam\``);
-				log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many links (${entry_links}x)`));
-			}else if (entry_mentions > banLevel.mentions) {
-				message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`mention spam\``);
-				log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Mentioning too many users (${entry_mentions}x)`));
-			}else if (entry_attachments > banLevel.attachments) {
-				message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`image spam\``);
-				log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many images (${entry_attachments}x)`));
-			}
+			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`link spam\``);
+			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many links (${entry_links}x)`));
+			slowmode_links.delete(message.author.id);
+		})
+		.catch(e => {
+			log(new Discord.RichEmbed().setTitle(':x: ERROR').setColor(0x000001).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Could not ban because they have a higher role`));
+		});
+	} else {
+		setTimeout(()=> {
+			entry_links -= message.embeds.length;
+			if(entry_links <= 0) slowmode_links.delete(message.author.id);
+		}, ratelimit);
+	}
+
+	if (entry_mentions > banLevel.mentions) {
+		message.member.ban(1).then(member => {
+			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`mention spam\``);
+			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Mentioning too many users (${entry_mentions}x)`));
+			slowmode_mentions.delete(message.author.id);
 		})
 		.catch(e => {
 			log(new Discord.RichEmbed().setTitle(':x: ERROR').setColor(0x000001).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Could not ban because they have a higher role`));
@@ -88,10 +101,18 @@ client.on("message", message => {
 			entry_mentions -= message.mentions.users.size + message.mentions.roles.size;
 			if(entry_mentions <= 0) slowmode_mentions.delete(message.author.id);
 		}, ratelimit);
-		setTimeout(()=> {
-			entry_links -= message.embeds.size;
-			if(entry_links <= 0) slowmode_links.delete(message.author.id);
-		}, ratelimit);
+	}
+
+	if (entry_attachments > banLevel.attachments) {
+		message.member.ban(1).then(member => {
+			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`image spam\``);
+			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many images (${entry_attachments}x)`));
+			slowmode_attachments.delete(message.author.id);
+		})
+		.catch(e => {
+			log(new Discord.RichEmbed().setTitle(':x: ERROR').setColor(0x000001).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Could not ban because they have a higher role`));
+		});
+	} else {
 		setTimeout(()=> {
 			entry_attachments -= message.attachments.size;
 			if(entry_attachments <= 0) slowmode_attachments.delete(message.author.id);
