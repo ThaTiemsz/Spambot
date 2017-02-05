@@ -1,7 +1,7 @@
 var Discord = require("discord.js");
 var client = new Discord.Client();
 
-client.login("Mjc0ODY1OTk1MjcxODk3MDg5.C24VnQ.tZWsCg73UjEOJ4CuwNTTCcRHwkQ");
+client.login("YOUR BOT TOKEN HERE");
 
 client.on("ready", () => {
 	console.log("I'm ready to do work!");
@@ -11,8 +11,7 @@ const slowmode_mentions = new Map();
 const slowmode_links = new Map();
 const slowmode_attachments = new Map();
 const ratelimit = 7500; // within 7.5 seconds
-const guild = "209719953706844161"; // guild id
-const logChannel = "274871132497379328"; // logs channel id
+const logChannel = "LOG CHANNEL ID HERE"; // logs channel id
 
 client.on("message", message => {
 
