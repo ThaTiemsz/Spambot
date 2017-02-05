@@ -1,6 +1,6 @@
 {
 	"name": "Spambot",
-	"version": "0.1.0",
+	"version": "0.9.0",
 	"description": "Discord.js Bot that will handle spam",
 	"readme": "README.md",
 	"maintainers": [],
