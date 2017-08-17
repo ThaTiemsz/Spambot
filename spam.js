@@ -17,7 +17,7 @@ client.on("message", message => {
 
 	if (message.content.startsWith("!ping")) {
 		let startTime = Date.now();
-		message.channel.sendMessage("Ping...").then(newMessage => {
+		message.channel.send("Ping...").then(newMessage => {
 			let endTime = Date.now();
 			newMessage.edit("Pong! Took `" + Math.round(endTime - startTime) + "ms`!");
 		});
@@ -37,7 +37,7 @@ client.on("message", message => {
 	};
 
 	// Ignore bots, DMs, Webhooks, if this bot has no perms, and Mods
-	if (message.author.bot || !message.guild || !message.member || !message.guild.member(client.user).hasPermission("BAN_MEMBERS") || message.member.hasPermission("MANAGE_MESSAGES")) return;
+	if (message.author.bot || !message.guild || !message.member || !message.guild.member(client.user).has("BAN_MEMBERS") || message.member.has("MANAGE_MESSAGES")) return;
 
 	// Ignore if 1 mention and it's a bot (bot interaction)
 	if (message.mentions.users.size == 1 && message.mentions.users.first().bot) return;
@@ -72,7 +72,7 @@ client.on("message", message => {
 	// If the total number of links in the last ratelimit is above the server ban level, ban user
 	if (entry_links > banLevel.links) {
 		message.member.ban(1).then(member => {
-			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`link spam\``);
+			message.channel.send(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`link spam\``);
 			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many links (${entry_links}x)`));
 			slowmode_links.delete(message.author.id);
 		})
@@ -88,7 +88,7 @@ client.on("message", message => {
 
 	if (entry_mentions > banLevel.mentions) {
 		message.member.ban(1).then(member => {
-			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`mention spam\``);
+			message.channel.send(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`mention spam\``);
 			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Mentioning too many users (${entry_mentions}x)`));
 			slowmode_mentions.delete(message.author.id);
 		})
@@ -104,7 +104,7 @@ client.on("message", message => {
 
 	if (entry_attachments > banLevel.attachments) {
 		message.member.ban(1).then(member => {
-			message.channel.sendMessage(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`image spam\``);
+			message.channel.send(`:ok_hand: banned \`${message.author.username}#${message.author.discriminator}\` for \`image spam\``);
 			log(new Discord.RichEmbed().setTitle(':hammer: Banned').setColor(0xFF0000).setTimestamp().addField('User', `${message.author.username}#${message.author.discriminator} (${message.author.id})`).addField('Reason', `Posting too many images (${entry_attachments}x)`));
 			slowmode_attachments.delete(message.author.id);
 		})
