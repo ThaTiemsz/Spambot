@@ -8,4 +8,4 @@ Automatically bans users that go over the maximum limit within the rate limit ti
 
 Heavily influenced by [No Mention-Spam 2.0](https://github.com/eslachance/nms2)
 
-Discord: `Tiemen#0107`
+Discord: `Tiemen#0001`
